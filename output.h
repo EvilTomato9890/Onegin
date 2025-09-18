@@ -1,0 +1,6 @@
+#ifndef OUTPUT_H_INCLUDED
+#define OUTPUT_H_INCLUDED
+
+#include "structers.h"
+void sort_and_print(string_data** arr, size_t strings_num, size_t elem_size);
+#endif
