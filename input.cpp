@@ -10,30 +10,7 @@
 
 const size_t STANDART_CALLOC_SIZE = 120;
 const float GROW_FACTOR = 2;
- 
-/**
- * @brief Функция, подсчитывающая число строк в файле.
- * @param [in] curr_file Файл, представленный в виде массива символов.
- * 
- * Функция проходиться по файлу и подсчитывает количество символов '\\n', обозначающих конец строки,
- * тем самым подсчитывая количество самих строк в файле.
- * @return Возвращает количество строк в файле.
-*/
-int calculate_num_of_strings(const char* curr_file) { 
-    LOGGER_INFO("Calculating num of strings started");
-    HARD_ASSERT(curr_file != nullptr, "File not found");
-
-    size_t num_of_strings = 0;
-    size_t file_len = (int)strlen(curr_file);
-    for (size_t i = 0; i < file_len; i++) {
-        if (curr_file[i] == '\n') {
-            num_of_strings++;
-        }
-    }
-    LOGGER_INFO("Calculating num of strings ended");
-    return num_of_strings;
-}
-
+const int ALPHABET_SIZE = 33;
 /**
  * @brief Функция, считывающая в буффер файл по переданному названию
  * @param [in] file_name Название файла, который требуется считать в буффер.
@@ -42,7 +19,7 @@ int calculate_num_of_strings(const char* curr_file) {
  * 
  * @return Возвращает считанный файл в формате строки
 */
-char* read_file_into_buffer(char *file_name) { 
+char* read_file_into_buffer(const char *file_name) { 
     LOGGER_INFO("Reading file started");
     FILE *curr_file = fopen(file_name, "r");
     HARD_ASSERT(curr_file != nullptr, "File not found");
@@ -60,7 +37,7 @@ char* read_file_into_buffer(char *file_name) {
     }
     LOGGER_DEBUG("Memry allocation succes, taken %ld bytes", (long)((length + 1) * sizeof(char)));
     buffer[length] = '\0';
-    fread(buffer, 1, length, curr_file);
+    fread(buffer, sizeof(buffer[0]), length, curr_file);
     fclose(curr_file);
     LOGGER_INFO("File closed, buffer returned");
     return buffer;
@@ -82,7 +59,24 @@ size_t count_string_and_prepare_buffer(char* buff) {
     }
     return strings_num;
 }
+/*
+size_t* count_string_and_prepare_buffer_bred(char* buff) {
+    LOGGER_DEBUG("Prepare_buffer started");
+    HARD_ASSERT(buff != nullptr, "Buff is nullptr");
+    
+    size_t strings_num = 0;
+    size_t buff_len = strlen(buff);
+    if (buff_len <= 1) LOGGER_WARNING("Very small size of buffer");
 
+    for(size_t i = 0; i < buff_len; i++) {
+        if(buff[i] == '\n') {
+            strings_num++;
+            buff[i] = '\0';
+        }
+    }
+    return strings_num;
+}
+*/
 size_t get_string_from_buffer(char** string_ptr, char** buff) {
     HARD_ASSERT(buff != nullptr, "Buff is nullptr");
 
@@ -110,8 +104,19 @@ string_data** input_parsing(char* buff, size_t* strings_num_return) {
     *strings_num_return = strings_num;
     return strings;
 }
+/*
+arr_of_ptr_to_str* input_parsing_bred(char* buff, size_t** strings_num_arr) {
+    LOGGER_DEBUG("input_parsing started");
+    if (buff == nullptr) LOGGER_WARNING("Buff is nullptr");
+    
+    size_t* strings_num = count_string_and_prepare_buffer(buff);
 
-
+    arr_of_ptr_to_str arr_of_arr_of_strings[ALPHABET_SIZE] = {};
+    for(size_t i = 0; i < ALPHABET_SIZE; i++) {
+        arr_of_arr_of_strings[i].arr = (string_data**)calloc(1, sizeof(string_data*))
+    }    
+}
+*/
 ssize_t getline_from_buffer(char** lineptr, size_t* size_of_buffer, char* buff) { 
     LOGGER_DEBUG("my_getline started");
     HARD_ASSERT(lineptr != nullptr, "Pointer to string is nullptr");

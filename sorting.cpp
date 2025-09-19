@@ -22,12 +22,6 @@ void swap(void* obj1, void* obj2, size_t size) {
 	free(temp);
 }
 
-int cmp_for_int(const void* obj1, const void* obj2) {
-    int iobj1 = *(const int*)obj1;
-    int iobj2 = *(const int*)obj2;
-    return (iobj1 > iobj2) - (iobj1 < iobj2);
-}
-
 int cmp_for_string_data(const void* a, const void* b) {
 	HARD_ASSERT(a != nullptr, "A is nullptr");
 	HARD_ASSERT(b != nullptr, "B is nullptr");
@@ -138,10 +132,10 @@ void qsort_from_back_for_string_data(void* target_arr,
 void bubble_sort(void* target_arr, 
 				 size_t elements_num, size_t base, 
 				 function_ptr cmp) {
-	LOGGER_DEBUG("bubble_sort started");
+	LOGGER_DEBUG("Bubble_sort started");
 	HARD_ASSERT(target_arr != nullptr, "target_arr is nullptr");
 	for(size_t i = 0; i < elements_num; i++) {
-		for(size_t j = 0; j < elements_num - 1; j++) {
+		for(size_t j = 0; j < elements_num - i - 1; j++) {
 			void* curr = (char*)target_arr + j * base;
 			void* next = (char*)target_arr + (j + 1) * base;
 			if ((*cmp)(curr, next) > 0) {

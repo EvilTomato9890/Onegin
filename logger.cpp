@@ -1,8 +1,9 @@
-#include "logger.h"
 #include <stdarg.h>
 #include <time.h>
-#include "asserts.h"
 
+#include "asserts.h"
+#include "colors.h"
+#include "logger.h"
 
 static FILE *output_stream = NULL;
 static logger_output_type output_type = EXTERNAL_STREAM;
