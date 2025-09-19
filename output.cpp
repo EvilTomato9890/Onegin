@@ -5,13 +5,8 @@
 #include "output.h"
 #include "sorting.h"
 void sort_and_print(string_data** arr, size_t strings_num, size_t elem_size) {
-	FILE* temp = fopen("Onegin_output", "w");
-	fclose(temp);
-
-	FILE* output_file = fopen("Onegin_output", "a");
-
-
-
+	FILE* output_file = fopen("Onegin_output", "w");
+	
 	fprintf(output_file, "\n______________________________________NORMAL ONEGIN___________________________________\n\n");
 	for(size_t i = 0; i < strings_num; i++) {
 		fprintf(output_file, "%s\n", arr[i]->str);
