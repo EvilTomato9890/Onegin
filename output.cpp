@@ -6,7 +6,7 @@
 #include "sorting.h"
 
 
-size_t print_arr(string_data** arr, size_t strings_num, FILE* output_file) {
+size_t print_arr(string_data** const arr, size_t strings_num, FILE* output_file) {
 	LOGGER_DEBUG("print_arr started");
 	HARD_ASSERT(arr != nullptr, "Arr is nullptr");
 	HARD_ASSERT(output_file != nullptr, "output_file is nullptr");
@@ -31,6 +31,8 @@ void sort_and_print(string_data** arr, char* buff, size_t strings_num, size_t el
 	FILE* output_file = fopen("Onegin_output", "w");
 	HARD_ASSERT(output_file != nullptr, "File Onegin_output not found");
 
+
+	//Вынести в main TODO;
 	bubble_sort_for_string_data(arr, strings_num, elem_size);
 	fprintf(output_file, "\n______________________________FORWARD CUSTOM SORTED ONEGIN____________________________\n\n");
     print_arr(arr, strings_num, output_file);
@@ -43,6 +45,7 @@ void sort_and_print(string_data** arr, char* buff, size_t strings_num, size_t el
     fprintf(output_file, "\n________________________________QSORT FROM BACK ONEGIN________________________________\n\n");
 	print_arr(arr, strings_num, output_file);
 
+	// print_original();
 	fprintf(output_file, "\n______________________________________NORMAL ONEGIN___________________________________\n\n");
 	for(size_t i = 0; i < strings_num; i++) {
 		size_t symbols = fprintf(output_file, "%s\n", buff);

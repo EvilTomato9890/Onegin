@@ -58,7 +58,7 @@
     #define SOFT_ASSERT(test, message) \
         do {        \
             if(!(test)) { \
-                printf(RED "%s\nERROR WAS OCCURED IN %s IN %i LINE FROM %s BY %s" RESET "\n", \
+                fprintf(stderr, RED "%s\nERROR WAS OCCURED IN %s IN %i LINE FROM %s BY %s" RESET "\n", \
                     message,__FILE__, __LINE__, __PRETTY_FUNCTION__, stringify(test)); \
             }  \
         } while(0)

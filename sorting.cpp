@@ -20,6 +20,25 @@ void swap(void* obj1, void* obj2, size_t size) {
 	memcpy(obj1, obj2, size);
 	memcpy(obj2, temp, size);
 	free(temp);
+
+	// 1000% переписать
+
+	// stdint.h <-> stdtypes.h
+	// uint64_t, uint32_t, uint16_t, uint8_t
+	// 64 byte -> 8x8
+	// 68 byte -> 8x8 + 1x4
+	// 71 byte -> 8x8 + 1x4 + 1x2 + 1x1
+	// size = 1000111 = 1 + 2 + 4 + 64
+	// x1 = size & 1
+
+	// x = (x / 2) * 2 + 1 // int
+	// x = x | 1           // 
+
+	// x2 = size & 2
+	// x4 = size & 4
+	// x8 = size >> 3
+
+	// K&R switch case (возможно быстрее) проваливающийся
 }
 
 int cmp_for_string_data(const void* a, const void* b) {
@@ -48,7 +67,7 @@ int cmp_for_string_data(const void* a, const void* b) {
 	while(str1_index < len1 && str2_index < len2) {
 		if(tolower(str1[str1_index]) > tolower(str2[str2_index])) {
 			return 1;
-		} else if(tolower(str1[str1_index]) < tolower(str2[str2_index])) {
+		} else if(tolower(str1[str1_index]) < tolower(str2[str2_index])) { //TODO: Можно просто вычесть
 			return -1;
 		}
 		str1_index++;
