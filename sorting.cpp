@@ -13,13 +13,11 @@ typedef int(*function_ptr)(const void*, const void*);
 void swap(void* obj1, void* obj2, size_t size) {
 	HARD_ASSERT(obj1 != nullptr, "Obj1 is nullptr");
 	HARD_ASSERT(obj2 != nullptr, "Obj2 is nullptr");
-	//Стоит ли делать изначальное объявление temp[512]
-	void* temp = calloc(1, size);
+	void* temp[512];
 	HARD_ASSERT(temp != nullptr, "Temp is nullptr");
 	memcpy(temp, obj1, size);
 	memcpy(obj1, obj2, size);
 	memcpy(obj2, temp, size);
-	free(temp);
 
 	// 1000% переписать
 
@@ -65,10 +63,8 @@ int cmp_for_string_data(const void* a, const void* b) {
 
 
 	while(str1_index < len1 && str2_index < len2) {
-		if(tolower(str1[str1_index]) > tolower(str2[str2_index])) {
-			return 1;
-		} else if(tolower(str1[str1_index]) < tolower(str2[str2_index])) { //TODO: Можно просто вычесть
-			return -1;
+		if(str1[str1_index] != str2[str2_index]) {
+			return str1[str1_index] - str2[str2_index];
 		}
 		str1_index++;
 		str2_index++;

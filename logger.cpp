@@ -5,9 +5,16 @@
 #include "colors.h"
 #include "logger.h"
 
+
+
 static FILE *output_stream = NULL;
 static logger_output_type output_type = EXTERNAL_STREAM;
 static int color_enabled = 1;
+#define WinV
+
+#if defined(WinV)
+    #define localtime_r(T,Tm) (localtime_s(Tm,T) ? NULL : Tm)
+#endif
 
 const char* logger_mode_string(const logger_mode_type type) {
     switch (type) {

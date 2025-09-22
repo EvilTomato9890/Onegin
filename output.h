@@ -4,8 +4,7 @@
 #include "structers.h"
 
 size_t print_arr(/*const*/string_data** arr, size_t strings_num, FILE* output_file);
-void sort_and_print(string_data** arr, char* buff, size_t strings_num, size_t elem_size);
-
+size_t print_original(FILE* output_file, size_t strings_num, char** buff);
 #endif
 
 /*

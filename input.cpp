@@ -2,7 +2,7 @@
 #include "input.h"
 #include "asserts.h"
 #include "logger.h"
-
+#include "error_handling.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -19,33 +19,36 @@ const int ALPHABET_SIZE = 33;
  * 
  * @return Возвращает считанный файл в формате строки
 */
-// Добавить enum с ошибками
-// все функции её возвращают enum CudaStatus
+
 // get_error(status) return const char* -> print 
-char* read_file_into_buffer(const char *file_name) { 
+error_type read_file_into_buffer(FILE* curr_file, char** buffer_return) { 
     LOGGER_INFO("Reading file started");
-    FILE *curr_file = fopen(file_name, "r"); // TODO: check error
     HARD_ASSERT(curr_file != nullptr, "File not found");
 
-    char *buffer = 0;
-    fseek (curr_file, 0, SEEK_END);
-    long int length = ftell(curr_file);
-    fseek (curr_file, 0, SEEK_SET);
+    error_type error = NO_ERROR;
+
+    fseek(curr_file, 0, SEEK_END);
+    size_t length = ftell(curr_file);
+    fseek(curr_file, 0, SEEK_SET);
 
     // Быстрее stat
 
-    LOGGER_DEBUG("Memory allocation started");
-    buffer = (char*)calloc(length + 1, sizeof(*file_name)); 
-    if(buffer == nullptr) {
-        LOGGER_ERROR("Memory allocation failed"); //БЕз ассерта прграмма продолжит выпонление И закрыть файл
-        HARD_ASSERT(false, "Memory allocation failed");
-    }
-    LOGGER_DEBUG("Memry allocation succes, taken %ld bytes", (long)((length + 1) * sizeof(char)));
+    char* buffer = (char*)calloc(length + 1, sizeof(char));
+    CHECK_ERROR(buffer != nullptr, MEMORY_ALLOC_ERROR, 
+        return MEMORY_ALLOC_ERROR;
+    );
+    LOGGER_DEBUG("Memory allocation succes, taken %ld bytes", (long)((length + 1) * sizeof(char)));
+
     buffer[length] = '\0';
-    fread(buffer, sizeof(buffer[0]), length, curr_file); // TODO: check error
-    fclose(curr_file);
-    LOGGER_INFO("File closed, buffer returned");
-    return buffer;
+    size_t symbols = fread(buffer, sizeof(buffer[0]), length, curr_file); // TODO: check error
+    CHECK_ERROR(length > symbols, READ_FILE_ERROR, 
+        free(buffer);
+        return READ_FILE_ERROR;
+    );
+
+    LOGGER_INFO("Buffer returned");
+    *buffer_return = buffer;
+    return error;
 }
 
 size_t count_string_and_prepare_buffer(char* buff) {
@@ -82,38 +85,41 @@ size_t* count_string_and_prepare_buffer_bred(char* buff) {
     return strings_num;
 }
 */
-// TODO: мутная функция
-// printf(buffer); buffer = strchr(buffer, '\0') + 1;
-// asldkjaada\0asdasdasdasdasd\0
-//            +                +------> разницы
-//            +----------------------->
-// TODO: не придумывать стандартные функции
+
 size_t get_string_from_buffer(char** string_ptr, char** buff) {
     HARD_ASSERT(buff != nullptr, "Buff is nullptr");
     HARD_ASSERT(string_ptr != nullptr, "Buff is nullptr");
+
     *string_ptr = *buff;
-    size_t string_len = 0;
-    while(**buff != '\0') {
-        (*buff)++;
-        string_len++;
-    }
-    (*buff)++;
+    *buff = strchr(*buff, '\0') + 1;
+    size_t string_len = *buff - *string_ptr;
     return string_len;
 }
 
-string_data** input_parsing(char* buff, size_t* strings_num_return) {
+error_type parse_to_string_data(char* buff, size_t* strings_num_return, string_data*** arr_return, string_data** struct_container) {
     LOGGER_DEBUG("input_parsing started");
     if (buff == nullptr) LOGGER_WARNING("Buff is nullptr");
     
+    error_type error = NO_ERROR;
+
     size_t strings_num = count_string_and_prepare_buffer(buff);
-    string_data** strings = (string_data**)calloc(strings_num, sizeof(string_data*)); //TODO: Каллочить все в один массив с помощью 1 каллока и указатели на структуры и сами структуры
-//calloc(strings_num, size_of(...))
+    string_data** strings = (string_data**)calloc(strings_num, sizeof(string_data*));
+    string_data* arr_struct_addreses = (string_data*)calloc(strings_num, sizeof(string_data));
+    CHECK_ERROR(strings != nullptr && arr_struct_addreses != nullptr, MEMORY_ALLOC_ERROR, 
+        free(arr_struct_addreses);
+        free(strings);
+        return MEMORY_ALLOC_ERROR;
+    );
+
     for(size_t i = 0; i < strings_num; i++) {
-        strings[i] = (string_data*)calloc(1, sizeof(string_data));
+        strings[i] = arr_struct_addreses + i;
         strings[i]->len = get_string_from_buffer(&(strings[i]->str), &buff);    
     }
+    
+    *struct_container = arr_struct_addreses;
     *strings_num_return = strings_num;
-    return strings;
+    *arr_return = strings;
+    return error;
 }
 /*
 arr_of_ptr_to_str* input_parsing_bred(char* buff, size_t** strings_num_arr) {
@@ -128,6 +134,7 @@ arr_of_ptr_to_str* input_parsing_bred(char* buff, size_t** strings_num_arr) {
     }    
 }
 */
+/*
 ssize_t getline_from_buffer(char** lineptr, size_t* size_of_buffer, char* buff) { 
     LOGGER_DEBUG("my_getline started");
     HARD_ASSERT(lineptr != nullptr, "Pointer to string is nullptr");
@@ -178,3 +185,4 @@ ssize_t getline_from_buffer(char** lineptr, size_t* size_of_buffer, char* buff) 
     *(--ptr) = '\0'; //С помощью новой функции сделать проверку на выход за границы массивы
     return num_chars;
 }
+*/
