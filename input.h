@@ -8,4 +8,5 @@ error_type read_file_into_buffer(FILE* file_name, char** buffer_return);
 error_type parse_to_string_data(char* buffer, size_t* strings_num_return, string_data*** arr_return, string_data** struct_container);
 size_t count_string_and_prepare_buffer(char* buff);
 size_t get_string_from_buffer(char** string_ptr, char** buff);
+error_type get_file_size(FILE* curr_file, size_t* length);
 #endif

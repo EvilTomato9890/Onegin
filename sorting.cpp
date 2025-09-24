@@ -2,23 +2,40 @@
 #include "asserts.h"
 #include "sorting.h"
 #include "logger.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdint.h>
 static const int MAXSIZE = 512;
 
 typedef int(*function_ptr)(const void*, const void*);
 
-void swap(void* obj1, void* obj2, size_t size) {
-	HARD_ASSERT(obj1 != nullptr, "Obj1 is nullptr");
-	HARD_ASSERT(obj2 != nullptr, "Obj2 is nullptr");
-	void* temp[512];
-	HARD_ASSERT(temp != nullptr, "Temp is nullptr");
-	memcpy(temp, obj1, size);
-	memcpy(obj1, obj2, size);
-	memcpy(obj2, temp, size);
+void my_swap(void *const a, void *const b, size_t const size) {
+    HARD_ASSERT(a != nullptr, "a is nullptr");
+   	HARD_ASSERT(b != nullptr, "b is nullptr");
 
+    char* obj1 = (char*)a;
+    char* obj2 = (char*)b;
+
+    size_t i = size;
+#define DOSHIT(type)                  \
+    while (i >= sizeof(type)) {       \
+        type tmp = *(type*)obj1;      \
+        *(type*)obj1 = *(type*)obj2;  \
+        *(type*)obj2 = tmp;           \
+        obj1 += sizeof(type);         \
+        obj2 += sizeof(type);         \
+        i = i - sizeof(type);         \
+    }
+
+    DOSHIT(uint64_t)
+    DOSHIT(uint32_t)
+    DOSHIT(uint16_t)
+    DOSHIT(uint8_t)
+#undef DOSHIT
+}
 	// 1000% переписать
 
 	// stdint.h <-> stdtypes.h
@@ -37,7 +54,7 @@ void swap(void* obj1, void* obj2, size_t size) {
 	// x8 = size >> 3
 
 	// K&R switch case (возможно быстрее) проваливающийся
-}
+
 
 int cmp_for_string_data(const void* a, const void* b) {
 	HARD_ASSERT(a != nullptr, "A is nullptr");
@@ -129,24 +146,24 @@ int reverse_cmp_for_string_data(const void* a, const void* b) {
 
 
 void bubble_sort_for_string_data(void* target_arr, 
-								 size_t elements_num, size_t base) {
+								 const size_t elements_num, const size_t base) {
 	bubble_sort(target_arr, elements_num, base, &cmp_for_string_data);
 }
 
 void qsort_for_string_data(void* target_arr, 
-						   size_t elements_num, size_t base) {
+						   const size_t elements_num, const size_t base) {
 	LOGGER_DEBUG("Qsort started");
 	qsort(target_arr, elements_num, base, &cmp_for_string_data);
 }
 
 void qsort_from_back_for_string_data(void* target_arr, 
-						   size_t elements_num, size_t base) {
+						   const size_t elements_num, const size_t base) {
 	LOGGER_DEBUG("Qsort from back started");
 	qsort(target_arr, elements_num, base, &reverse_cmp_for_string_data);
 }
 void bubble_sort(void* target_arr, 
-				 size_t elements_num, size_t base, 
-				 function_ptr cmp) {
+				 const size_t elements_num, const size_t base, 
+				 const function_ptr cmp) {
 	LOGGER_DEBUG("Bubble_sort started");
 	HARD_ASSERT(target_arr != nullptr, "target_arr is nullptr");
 	for(size_t i = 0; i < elements_num; i++) {
@@ -154,7 +171,7 @@ void bubble_sort(void* target_arr,
 			void* curr = (char*)target_arr + j * base;
 			void* next = (char*)target_arr + (j + 1) * base;
 			if ((*cmp)(curr, next) > 0) {
-				swap(curr, next, base);
+				my_swap(curr, next, base);
 			}
 		}
 	}

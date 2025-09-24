@@ -3,8 +3,8 @@
 
 #include "structers.h"
 
-size_t print_arr(/*const*/string_data** arr, size_t strings_num, FILE* output_file);
-size_t print_original(FILE* output_file, size_t strings_num, char** buff);
+size_t print_arr(const string_data *const *const arr, const size_t strings_num, FILE* output_file);
+size_t print_original(FILE* output_file, const size_t strings_num, char** buff);
 #endif
 
 /*

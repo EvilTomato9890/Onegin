@@ -6,7 +6,7 @@
 #include "sorting.h"
 
 
-size_t print_arr(string_data** const arr, size_t strings_num, FILE* output_file) {
+size_t print_arr(const string_data *const *const arr, const size_t strings_num, FILE* output_file) {
 	LOGGER_DEBUG("print_arr started");
 	HARD_ASSERT(arr != nullptr, "Arr is nullptr");
 	HARD_ASSERT(output_file != nullptr, "output_file is nullptr");
@@ -20,7 +20,7 @@ size_t print_arr(string_data** const arr, size_t strings_num, FILE* output_file)
 	return symbols_cnt;
 }
 
-size_t print_original(FILE* output_file, size_t strings_num, char** buff) {
+size_t print_original(FILE* output_file, const size_t strings_num, char** buff) {
 	LOGGER_DEBUG("print_original started");
 	HARD_ASSERT(output_file != nullptr, "Output_file is nullptr");
 	HARD_ASSERT(buff != nullptr, "Buff is nullptr");

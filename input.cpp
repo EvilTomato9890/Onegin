@@ -20,28 +20,51 @@ const int ALPHABET_SIZE = 33;
  * @return Возвращает считанный файл в формате строки
 */
 
+error_type get_file_size(FILE* curr_file, size_t* length) {
+    LOGGER_DEBUG("get_file_size started");
+    HARD_ASSERT(curr_file != nullptr, "File not found");
+    HARD_ASSERT(length != nullptr, "Return ptr is nullptr");
+
+    int fseek_error = fseek(curr_file, 0, SEEK_END);
+    CHECK_ERROR(fseek_error == 0,  
+        LOGGER_ERROR("Fseek droped"); \
+        return PROCESSING_FILE_ERROR;
+    );
+    *length = ftell(curr_file);
+    fseek_error = fseek(curr_file, 0, SEEK_SET);
+    CHECK_ERROR(fseek_error == 0,
+        LOGGER_ERROR("Fseek droped");
+        return PROCESSING_FILE_ERROR;
+    );
+    return NO_ERROR;
+}
+
 // get_error(status) return const char* -> print 
 error_type read_file_into_buffer(FILE* curr_file, char** buffer_return) { 
     LOGGER_INFO("Reading file started");
     HARD_ASSERT(curr_file != nullptr, "File not found");
-
+    HARD_ASSERT(buffer_return != nullptr, "Return ptr is nullptr");
     error_type error = NO_ERROR;
 
-    fseek(curr_file, 0, SEEK_END);
-    size_t length = ftell(curr_file);
-    fseek(curr_file, 0, SEEK_SET);
-
+    size_t length = 0;
+    error = get_file_size(curr_file, &length);
+    CHECK_ERROR(error == NO_ERROR, 
+        return PROCESSING_FILE_ERROR;
+    );
+    LOGGER_INFO("Filesize - %llu", length);
     // Быстрее stat
 
     char* buffer = (char*)calloc(length + 1, sizeof(char));
-    CHECK_ERROR(buffer != nullptr, MEMORY_ALLOC_ERROR, 
+    CHECK_ERROR(buffer != nullptr, 
+        LOGGER_ERROR("Memory allocation failed");
         return MEMORY_ALLOC_ERROR;
     );
     LOGGER_DEBUG("Memory allocation succes, taken %ld bytes", (long)((length + 1) * sizeof(char)));
 
     buffer[length] = '\0';
-    size_t symbols = fread(buffer, sizeof(buffer[0]), length, curr_file); // TODO: check error
-    CHECK_ERROR(length > symbols, READ_FILE_ERROR, 
+    size_t symbols = fread(buffer, sizeof(buffer[0]), length, curr_file);
+    CHECK_ERROR(length > symbols, 
+        LOGGER_ERROR("Failed to read file");
         free(buffer);
         return READ_FILE_ERROR;
     );
@@ -52,19 +75,23 @@ error_type read_file_into_buffer(FILE* curr_file, char** buffer_return) {
 }
 
 size_t count_string_and_prepare_buffer(char* buff) {
-    LOGGER_DEBUG("Prepare_buffer started");
+    LOGGER_DEBUG("count_string_and_prepare_buffer started");
     HARD_ASSERT(buff != nullptr, "Buff is nullptr");
     
     size_t strings_num = 0;
-    size_t buff_len = strlen(buff);
-    if (buff_len <= 1) LOGGER_WARNING("Very small size of buffer");
+    size_t index = 0;
+    size_t buff_len = 0;
 
-    for(size_t i = 0; i < buff_len; i++) {
-        if(buff[i] == '\n') {
+    while(buff[index] != '\0') {
+        if(buff[index] == '\n') {
             strings_num++;
-            buff[i] = '\0';
+            buff[index] = '\0';
         }
+        index++;
+        buff_len++;
     }
+
+    if (buff_len <= 1) LOGGER_WARNING("Very small size of buffer");
     return strings_num;
 }
 /*
@@ -92,8 +119,7 @@ size_t get_string_from_buffer(char** string_ptr, char** buff) {
 
     *string_ptr = *buff;
     *buff = strchr(*buff, '\0') + 1;
-    size_t string_len = *buff - *string_ptr;
-    return string_len;
+    return *buff - *string_ptr;
 }
 
 error_type parse_to_string_data(char* buff, size_t* strings_num_return, string_data*** arr_return, string_data** struct_container) {
@@ -105,7 +131,8 @@ error_type parse_to_string_data(char* buff, size_t* strings_num_return, string_d
     size_t strings_num = count_string_and_prepare_buffer(buff);
     string_data** strings = (string_data**)calloc(strings_num, sizeof(string_data*));
     string_data* arr_struct_addreses = (string_data*)calloc(strings_num, sizeof(string_data));
-    CHECK_ERROR(strings != nullptr && arr_struct_addreses != nullptr, MEMORY_ALLOC_ERROR, 
+    CHECK_ERROR(strings != nullptr && arr_struct_addreses != nullptr, 
+        LOGGER_ERROR("Memory allocation failed");
         free(arr_struct_addreses);
         free(strings);
         return MEMORY_ALLOC_ERROR;
@@ -115,7 +142,7 @@ error_type parse_to_string_data(char* buff, size_t* strings_num_return, string_d
         strings[i] = arr_struct_addreses + i;
         strings[i]->len = get_string_from_buffer(&(strings[i]->str), &buff);    
     }
-    
+
     *struct_container = arr_struct_addreses;
     *strings_num_return = strings_num;
     *arr_return = strings;
